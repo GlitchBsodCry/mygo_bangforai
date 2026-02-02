@@ -16,7 +16,7 @@ type Server struct {
 
 type Database struct {
 	Host     string `mapstructure:"host"`
-	Port     int    `mapstructure:"port"`
+	Port     string `mapstructure:"port"`
 	Username string `mapstructure:"username"`
 	Password string `mapstructure:"password"`
 	DBName   string `mapstructure:"dbname"`

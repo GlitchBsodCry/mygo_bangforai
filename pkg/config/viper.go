@@ -35,3 +35,7 @@ func InitConfig() error {
 func GetServerPort() string {
 	return model.AppConfig.Server.Port
 }
+
+func GetDatabaseConfig() model.Database {
+	return model.AppConfig.Database
+}
