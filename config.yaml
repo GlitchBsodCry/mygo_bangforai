@@ -1,0 +1,9 @@
+server:
+  port: "8080"
+
+database:
+  host: "localhost"
+  port: "3307"
+  username: "root"
+  password: "root"
+  dbname: "goai1"
