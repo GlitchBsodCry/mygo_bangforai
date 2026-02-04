@@ -1,9 +1,28 @@
 server:
-  port: "8080"
+  port: "8080"         # 服务器端口
+  name: "mygo-app"     # 服务器名称
+  env: "development"   # 环境: development, production, test
+  timeout: 30          # 超时时间（秒）
+  allow_origins: "*"   # 允许的跨域来源
 
 database:
-  host: "localhost"
-  port: "3307"
-  username: "root"
-  password: "root"
-  dbname: "goai1"
+  host: "localhost"             # 数据库主机
+  port: "3307"                  # 数据库端口
+  username: "root"              # 数据库用户名
+  password: "root"              # 数据库密码
+  dbname: "goai1"               # 数据库名称
+  max_idle_conns: 10            # 最大空闲连接数
+  max_open_conns: 100           # 最大打开连接数
+  conn_max_lifetime: 3600       # 连接最大生命周期（秒）
+
+logger:
+  level: "info"      # 日志级别: debug, info, warn, error
+  format: "json"     # 日志格式: json, console
+  output: "stdout"   # 输出方式: stdout, file
+  file: "logs/app.log" # 日志文件路径
+
+jwt:
+  secret: "your-secret-key-change-in-production" # JWT密钥
+  expires_in: 24           # 过期时间（小时）
+  issuer: "mygo-app"        # 签发者
+  subject: "user-token"     # 主题

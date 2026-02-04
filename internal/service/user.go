@@ -5,6 +5,7 @@ import (
 	//"mygo_bangforai/api/error/response"
 	"mygo_bangforai/api/model"
 	"mygo_bangforai/pkg/config"
+	"mygo_bangforai/pkg/utils"
 
 	"gorm.io/gorm"
 )
@@ -27,10 +28,15 @@ func Register(req model.RegisterRequest) (*model.User, error) {
 		return nil, result.Error
 	}
 
+	hashedPassword,err:= utils.HashPassword(req.Password)
+	if err!=nil{
+		return nil,err
+	}
+
 	user := model.User{
 		Username: req.Username,
 		Email:    req.Email,
-		Password: req.Password,
+		Password: hashedPassword,
 	}
 
 	result = db.Create(&user)
@@ -47,8 +53,8 @@ func Login(req model.LoginRequest) (*model.User, error) {
 		return nil, result.Error
 	}
 
-	if user.Password != req.Password {
-		return nil, errors.New("密码错误")
+	if !utils.CheckPassword(req.Password, user.Password){
+		return nil,errors.New("密码错误")
 	}
 
 	return &user, nil

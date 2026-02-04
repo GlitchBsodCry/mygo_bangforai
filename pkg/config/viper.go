@@ -39,3 +39,15 @@ func GetServerPort() string {
 func GetDatabaseConfig() model.Database {
 	return model.AppConfig.Database
 }
+
+func GetLoggerConfig() model.Logger {
+	return model.AppConfig.Logger
+}
+
+func GetJWTConfig() model.JWT {
+	return model.AppConfig.JWT
+}
+
+func GetServerConfig() model.Server {
+	return model.AppConfig.Server
+}

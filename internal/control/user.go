@@ -1,9 +1,10 @@
 package control
 
 import (
-	"mygo_bangforai/api/model"
 	"mygo_bangforai/api/error/response"
+	"mygo_bangforai/api/model"
 	"mygo_bangforai/internal/service"
+	"mygo_bangforai/pkg/utils"
 
 	"github.com/gin-gonic/gin"
 )
@@ -40,8 +41,17 @@ func Login(c *gin.Context) {
 		response.Error(c, response.Unauthorized, err.Error())
 		return
 	}
+
+	// 生成JWT token
+    token, err := utils.GenerateToken(user.ID, user.Username)
+    if err != nil {
+        response.Error(c, response.InternalError, "Failed to generate token")
+        return
+    }
+
 	response.Success(c, gin.H{
 		"id":       user.ID,
 		"username": user.Username,
+		"token":    token,
 	})
 }
