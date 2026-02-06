@@ -114,22 +114,22 @@ func GetLogger() *zap.Logger {
 	return Logger
 }
 
-func Info(msg string, fields ...zap.Field) {
+func Info(msg string, fields ...zap.Field) {// 信息级别
 	Logger.Info(msg, fields...)
 }
 
-func Error(msg string, fields ...zap.Field) {
+func Error(msg string, fields ...zap.Field) {// 错误级别
 	Logger.Error(msg, fields...)
 }
 
-func Debug(msg string, fields ...zap.Field) {
+func Debug(msg string, fields ...zap.Field) {// 调试级别
 	Logger.Debug(msg, fields...)
 }
 
-func Warn(msg string, fields ...zap.Field) {
+func Warn(msg string, fields ...zap.Field) {// 警告级别
 	Logger.Warn(msg, fields...)
 }
 
-func Fatal(msg string, fields ...zap.Field) {
+func Fatal(msg string, fields ...zap.Field) {// 致命错误级别
 	Logger.Fatal(msg, fields...)
 }

@@ -1,4 +1,4 @@
-package response
+package errors
 
 const (
 	SuccessCode   = 0
@@ -7,3 +7,4 @@ const (
     NotFound      = 404
     InternalError = 500
 ) 
+

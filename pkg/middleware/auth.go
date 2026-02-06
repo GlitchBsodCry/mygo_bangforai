@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"mygo_bangforai/api/error/response"
+	"mygo_bangforai/api/errors"
 	"mygo_bangforai/pkg/utils"
 
 	"github.com/gin-gonic/gin"
@@ -11,7 +11,7 @@ func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" {
-			response.Error(c, response.Unauthorized, "Authorization header is required")
+			errors.Error(c, errors.Unauthorized, "Authorization header is required")
 			c.Abort()
 			return
 		}
@@ -23,7 +23,7 @@ func AuthMiddleware() gin.HandlerFunc {
 
 		claims, err := utils.ParseToken(tokenString)
 		if err != nil {
-			response.Error(c, response.Unauthorized, "Invalid token")
+			errors.Error(c, errors.Unauthorized, "Invalid token")
 			c.Abort()
 			return
 		}
