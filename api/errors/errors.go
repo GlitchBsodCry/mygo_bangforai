@@ -2,7 +2,6 @@ package errors
 
 import (
 	//"fmt"
-	"mygo_bangforai/pkg/logger"
 	"time"
 )
 
@@ -31,6 +30,5 @@ func WrapError(err error, code int, message string, op string, context map[strin
 }
 
 func HandleError(err ServerError) *ServerError {
-	logger.Error(err.Message, logger.Zap.Any("error", err))
 	return nil
 }

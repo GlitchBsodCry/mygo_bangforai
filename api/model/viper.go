@@ -37,6 +37,7 @@ type Logger struct {
 	Format string `mapstructure:"format"` // 日志格式: json, console
 	Output string `mapstructure:"output"` // 输出方式: stdout, file
 	File   string `mapstructure:"file"`   // 日志文件路径
+	ErrorFile   string `mapstructure:"error_file"`   // 错误日志文件路径
 }
 
 // JWT 配置

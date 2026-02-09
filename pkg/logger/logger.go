@@ -1,105 +1,68 @@
 package logger
 
 import (
-	"os"
-	"path/filepath"
-
+	"fmt"
 	"mygo_bangforai/pkg/config"
+	"os"
 
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
 
-var Logger *zap.Logger
-
-// Zap 封装zap的字段函数
-type ZapType struct{}
-
-func (z ZapType) Any(s string, value interface{}) zap.Field {
-	return zap.Any(s, value)
-}
-
-var Zap ZapType
-
-// String 创建字符串类型的字段
-func (z ZapType) String(key, value string) zap.Field {
-	return zap.String(key, value)
-}
-
-// Int 创建整数类型的字段
-func (z ZapType) Int(key string, value int) zap.Field {
-	return zap.Int(key, value)
-}
-
-// Bool 创建布尔类型的字段
-func (z ZapType) Bool(key string, value bool) zap.Field {
-	return zap.Bool(key, value)
-}
-
-// Error 创建错误类型的字段
-func (z ZapType) Error(err error) zap.Field {
-	return zap.Error(err)
-}
+var (
+	Logger *zap.Logger
+	Sugar  *zap.SugaredLogger
+)
 
 func InitLogger() {
-	// 从配置中获取日志配置
-	loggerConfig := config.GetLoggerConfig()
+	logLevel:=getLogLevel()
+	logFile:=config.GetLoggerConfig().File
+	//logErrorFile:=config.GetLoggerConfig().ErrorFile
+	logOutput:=config.GetLoggerConfig().Output
+	logFormat:=config.GetLoggerConfig().Format
 
-	// 设置日志级别
-	logLevel := getLogLevel(loggerConfig.Level)
-
-	// 设置编码器
-	encoderConfig := zap.NewProductionEncoderConfig()
-	encoderConfig.TimeKey = "time"
-	encoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
+	encoderConfig := zap.NewProductionEncoderConfig()// 生产环境编码器配置
+	encoderConfig.TimeKey = "time"					// 时间键名
+	encoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder// 时间编码器为ISO8601格式
 
 	var encoder zapcore.Encoder
-	if loggerConfig.Format == "console" {
-		encoder = zapcore.NewConsoleEncoder(encoderConfig)
+	if logFormat == "json" {
+		encoder = zapcore.NewJSONEncoder(encoderConfig)// JSON编码器
 	} else {
-		encoder = zapcore.NewJSONEncoder(encoderConfig)
+		encoder = zapcore.NewConsoleEncoder(encoderConfig)// 控制台编码器
 	}
 
-	// 设置输出
-	var writer zapcore.WriteSyncer
-	if loggerConfig.Output == "file" {
-		// 确保日志目录存在
-		logDir := filepath.Dir(loggerConfig.File)
-		os.MkdirAll(logDir, 0755)
-
-		// 打开日志文件
-		file, err := os.OpenFile(loggerConfig.File, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	var core zapcore.Core
+	if logOutput == "file" {
+		file, err := os.OpenFile(logFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 		if err != nil {
-			// 如果文件打开失败，使用标准输出
-			writer = zapcore.AddSync(os.Stdout)
-			Info("日志文件打开失败，使用标准输出", Zap.Error(err))
+			fmt.Printf("打开日志文件失败: %v\n", err)
+			// 回退到控制台输出
+			core = zapcore.NewCore(encoder, zapcore.AddSync(os.Stdout), logLevel)
 		} else {
-			writer = zapcore.AddSync(file)
+			// 同时输出到文件和控制台
+			core = zapcore.NewTee(
+				zapcore.NewCore(encoder, zapcore.AddSync(file), logLevel),
+				zapcore.NewCore(encoder, zapcore.AddSync(os.Stdout), logLevel),
+			)
 		}
 	} else {
-		writer = zapcore.AddSync(os.Stdout)
+		core = zapcore.NewCore(encoder, zapcore.Lock(os.Stdout), logLevel)
 	}
 
-	// 创建核心
-	core := zapcore.NewCore(
-		encoder,
-		writer,
-		logLevel,
-	)
-
-	// 创建日志器
 	Logger = zap.New(core, zap.AddCaller(), zap.AddCallerSkip(1))
-
-	Info("日志初始化完成",
-		Zap.String("level", loggerConfig.Level),
-		Zap.String("format", loggerConfig.Format),
-		Zap.String("output", loggerConfig.Output),
-		Zap.String("file", loggerConfig.File),
+	Sugar = Logger.Sugar()
+	
+	Logger.Info("日志初始化完成",
+		zap.String("level", logLevel.String()),
+		zap.String("format", logFormat),
+		zap.String("file", logFile),
 	)
+	
 }
 
-// getLogLevel 根据配置的日志级别字符串返回对应的zapcore.Level
-func getLogLevel(level string) zapcore.Level {
+func getLogLevel() zapcore.Level {
+	level:=config.GetLoggerConfig().Level
 	switch level {
 	case "debug":
 		return zapcore.DebugLevel
@@ -114,26 +77,42 @@ func getLogLevel(level string) zapcore.Level {
 	}
 }
 
-func GetLogger() *zap.Logger {
-	return Logger
-}
-
-func Info(msg string, fields ...zap.Field) { // 信息级别
-	Logger.Info(msg, fields...)
-}
-
-func Error(msg string, fields ...zap.Field) { // 错误级别
-	Logger.Error(msg, fields...)
-}
-
-func Debug(msg string, fields ...zap.Field) { // 调试级别
+func Debug(msg string, fields ...zap.Field) {
 	Logger.Debug(msg, fields...)
 }
 
-func Warn(msg string, fields ...zap.Field) { // 警告级别
+func Debugf(template string, args ...interface{}) {
+	Sugar.Debugf(template, args...)
+}
+
+func Info(msg string, fields ...zap.Field) {
+	Logger.Info(msg, fields...)
+}
+
+func Infof(template string, args ...interface{}) {
+	Sugar.Infof(template, args...)
+}
+
+func Warn(msg string, fields ...zap.Field) {
 	Logger.Warn(msg, fields...)
 }
 
-func Fatal(msg string, fields ...zap.Field) { // 致命错误级别
+func Warnf(template string, args ...interface{}) {
+	Sugar.Warnf(template, args...)
+}
+
+func Error(msg string, fields ...zap.Field) {
+	Logger.Error(msg, fields...)
+}
+
+func Errorf(template string, args ...interface{}) {
+	Sugar.Errorf(template, args...)
+}
+
+func Fatal(msg string, fields ...zap.Field) {
 	Logger.Fatal(msg, fields...)
+}
+
+func Fatalf(template string, args ...interface{}) {
+	Sugar.Fatalf(template, args...)
 }
