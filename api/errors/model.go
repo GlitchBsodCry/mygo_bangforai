@@ -8,7 +8,7 @@ import (
 type ServerError struct {
 	Code    int    `json:"code"`
 	Message string `json:"message"`
-	Op      string `json:"op"`
+	Op      string `json:"op"`// 操作名称，用于定位错误发生的位置
 
 	Timestamp time.Time `json:"timestamp"`
 	Original   error    `json:"original"`

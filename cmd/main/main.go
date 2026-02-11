@@ -8,17 +8,38 @@ import (
 )
 
 func main() {
-	logger.InitLogger()// 初始化日志
+	err:=logger.InitLogger()
+	if err!=nil{
+		panic(err)
+	}
+	logger.Info("日志初始化完成")
+
+	err=config.InitConfig()
+	if err!=nil{
+		logger.Fatalf("初始化配置失败: %v", err)
+	}
+	logger.Info("配置初始化完成")
+
+	err=utils.InitJWT()
+	if err!=nil{
+		logger.Fatalf("初始化JWT失败: %v", err)
+	}
+	logger.Info("JWT初始化完成")
 	
-	config.InitConfig()// 初始化配置
+	err=config.InitMySQL()
+	if err!=nil{
+		logger.Fatalf("初始化MySQL失败: %v", err)
+	}
+	logger.Info("MySQL初始化完成")
 	
-	utils.InitJWT()// 初始化JWT
-	
-	config.InitMySQL()// 初始化 MySQL 数据库
-	
-	r := router.SetupRouter()
+	r,err := router.SetupRouter()
+	if err!=nil{
+		logger.Fatalf("初始化路由失败: %v", err)
+	}
+	logger.Info("路由初始化完成")
 	serverPort := ":" + config.GetServerPort() + ""// 从配置中获取端口号
 	r.Run(serverPort)
+	logger.Info("服务器启动完成，监听端口: " + serverPort)
 }
 
 //http://localhost:8080

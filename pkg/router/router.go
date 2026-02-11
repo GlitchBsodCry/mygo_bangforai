@@ -7,7 +7,7 @@ import (
 	"mygo_bangforai/pkg/middleware"
 )
 
-func SetupRouter() *gin.Engine {
+func SetupRouter() (*gin.Engine, error) {
 	r := gin.Default()
 	r.Use(middleware.Recovery())
 	ruser := r.Group("/user")
@@ -15,5 +15,5 @@ func SetupRouter() *gin.Engine {
 		ruser.POST("/register", control.Register)
 		ruser.POST("/login", control.Login)
 	}
-	return r
+	return r,nil
 }

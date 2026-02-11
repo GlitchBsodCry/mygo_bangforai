@@ -3,6 +3,7 @@ package logger
 import (
 	"fmt"
 	"mygo_bangforai/pkg/config"
+	"mygo_bangforai/pkg/utils"
 	"os"
 
 	"go.uber.org/zap"
@@ -14,10 +15,21 @@ var (
 	Sugar  *zap.SugaredLogger
 )
 
-func InitLogger() {
+// 实现 utils.LoggerInterface 接口
+type loggerImpl struct{}
+
+func (l *loggerImpl) Error(msg string, fields ...zap.Field) {
+	Error(msg, fields...)
+}
+
+func (l *loggerImpl) Errorf(template string, args ...interface{}) {
+	Errorf(template, args...)
+}
+
+func InitLogger() error{
 	logLevel:=getLogLevel()
 	logFile:=config.GetLoggerConfig().File
-	//logErrorFile:=config.GetLoggerConfig().ErrorFile
+	logErrorFile:=config.GetLoggerConfig().ErrorFile
 	logOutput:=config.GetLoggerConfig().Output
 	logFormat:=config.GetLoggerConfig().Format
 
@@ -32,33 +44,62 @@ func InitLogger() {
 		encoder = zapcore.NewConsoleEncoder(encoderConfig)// 控制台编码器
 	}
 
-	var core zapcore.Core
+	var cores []zapcore.Core
+	
 	if logOutput == "file" {
 		file, err := os.OpenFile(logFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 		if err != nil {
 			fmt.Printf("打开日志文件失败: %v\n", err)
 			// 回退到控制台输出
-			core = zapcore.NewCore(encoder, zapcore.AddSync(os.Stdout), logLevel)
+			cores = append(cores, zapcore.NewCore(encoder, zapcore.AddSync(os.Stdout), logLevel))
 		} else {
-			// 同时输出到文件和控制台
-			core = zapcore.NewTee(
-				zapcore.NewCore(encoder, zapcore.AddSync(file), logLevel),
-				zapcore.NewCore(encoder, zapcore.AddSync(os.Stdout), logLevel),
-			)
+			// 输出到普通日志文件（不包括错误级别）
+			cores = append(cores, zapcore.NewCore(encoder, zapcore.AddSync(file), zapcore.InfoLevel))
+			// 输出到控制台
+			cores = append(cores, zapcore.NewCore(encoder, zapcore.AddSync(os.Stdout), logLevel))
+			
+			// 打开错误日志文件
+			if logErrorFile != "" {
+				errorFile, err := os.OpenFile(logErrorFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+				if err != nil {
+					fmt.Printf("打开错误日志文件失败: %v\n", err)
+				} else {
+					// 错误级别日志输出到错误文件
+					cores = append(cores, zapcore.NewCore(encoder, zapcore.AddSync(errorFile), zapcore.ErrorLevel))
+				}
+			}
 		}
 	} else {
-		core = zapcore.NewCore(encoder, zapcore.Lock(os.Stdout), logLevel)
+		cores = append(cores, zapcore.NewCore(encoder, zapcore.Lock(os.Stdout), logLevel))
+		
+		// 如果配置了错误日志文件，错误级别也输出到错误文件
+		if logErrorFile != "" {
+			errorFile, err := os.OpenFile(logErrorFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+			if err != nil {
+				fmt.Printf("打开错误日志文件失败: %v\n", err)
+			} else {
+				// 错误级别日志输出到错误文件
+				cores = append(cores, zapcore.NewCore(encoder, zapcore.AddSync(errorFile), zapcore.ErrorLevel))
+			}
+		}
 	}
+
+	// 使用 Tee 组合所有 cores
+	core := zapcore.NewTee(cores...)
 
 	Logger = zap.New(core, zap.AddCaller(), zap.AddCallerSkip(1))
 	Sugar = Logger.Sugar()
+	
+	// 注册日志实例到接口
+	utils.SetLogger(&loggerImpl{})
 	
 	Logger.Info("日志初始化完成",
 		zap.String("level", logLevel.String()),
 		zap.String("format", logFormat),
 		zap.String("file", logFile),
+		zap.String("error_file", logErrorFile),
 	)
-	
+	return nil
 }
 
 func getLogLevel() zapcore.Level {

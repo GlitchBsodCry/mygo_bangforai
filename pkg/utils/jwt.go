@@ -12,9 +12,10 @@ import (
 var jwtSecret []byte
 
 // InitJWT 初始化JWT配置
-func InitJWT() {
+func InitJWT() error{
 	jwtConfig := config.GetJWTConfig()
 	jwtSecret = []byte(jwtConfig.Secret)
+	return nil
 }
 
 type Claims struct {
