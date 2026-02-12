@@ -2,7 +2,7 @@ package config
 
 import (
 	"fmt"
-
+	"mygo_bangforai/api/errors"
 	"mygo_bangforai/api/model"
 
 	"github.com/fsnotify/fsnotify"
@@ -23,9 +23,11 @@ func InitConfig() error {
 	})
 	
 	if err := viper.ReadInConfig(); err != nil {// 读取配置文件
+		err= errors.WrapError(err, errors.ConfigError, "读取配置文件失败", "pkg/config/viper.ConfigFileUsed()")
 		return err
 	}
 	if err := viper.Unmarshal(&model.AppConfig); err != nil {// 解析配置到 AppConfig 结构体
+		err= errors.WrapError(err, errors.ConfigError, "解析配置文件失败", "pkg/config/viper.Unmarshal()")
 		return err
 	}
 	
@@ -33,21 +35,36 @@ func InitConfig() error {
 }
 
 func GetServerPort() string {
+	if model.AppConfig.Server.Port == "" {
+		errors.NewError(errors.ConfigError, "服务器端口未配置", "pkg/config/viper.GetServerPort()")
+	}
 	return model.AppConfig.Server.Port
 }
 
 func GetDatabaseConfig() model.Database {
+	if model.AppConfig.Database.Host == "" {
+		errors.NewError(errors.ConfigError, "数据库主机未配置", "pkg/config/viper.GetDatabaseConfig()")
+	}
 	return model.AppConfig.Database
 }
 
 func GetLoggerConfig() model.Logger {
+	if model.AppConfig.Logger.Level == "" {
+		errors.NewError(errors.ConfigError, "日志级别未配置", "pkg/config/viper.GetLoggerConfig()")
+	}
 	return model.AppConfig.Logger
 }
 
 func GetJWTConfig() model.JWT {
+	if model.AppConfig.JWT.Secret == "" {
+		errors.NewError(errors.ConfigError, "JWT 密钥未配置", "pkg/config/viper.GetJWTConfig()")
+	}
 	return model.AppConfig.JWT
 }
 
 func GetServerConfig() model.Server {
+	if model.AppConfig.Server.Name == "" {
+		errors.NewError(errors.ConfigError, "服务器名称未配置", "pkg/config/viper.GetServerConfig()")
+	}
 	return model.AppConfig.Server
 }

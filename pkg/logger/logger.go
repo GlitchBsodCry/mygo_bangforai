@@ -3,7 +3,7 @@ package logger
 import (
 	"fmt"
 	"mygo_bangforai/pkg/config"
-	"mygo_bangforai/pkg/utils"
+	"mygo_bangforai/pkg/interfacer"
 	"os"
 
 	"go.uber.org/zap"
@@ -15,16 +15,35 @@ var (
 	Sugar  *zap.SugaredLogger
 )
 
-// 实现 utils.LoggerInterface 接口
+// 实现 LoggerInterface 接口
 type loggerImpl struct{}
 
 func (l *loggerImpl) Error(msg string, fields ...zap.Field) {
 	Error(msg, fields...)
 }
-
 func (l *loggerImpl) Errorf(template string, args ...interface{}) {
 	Errorf(template, args...)
 }
+func (l *loggerImpl) Warn(msg string, fields ...zap.Field) {
+	Warn(msg, fields...)
+}
+func (l *loggerImpl) Warnf(template string, args ...interface{}) {
+	Warnf(template, args...)
+}
+func (l *loggerImpl) Info(msg string, fields ...zap.Field) {
+	Info(msg, fields...)
+}
+func (l *loggerImpl) Infof(template string, args ...interface{}) {
+	Infof(template, args...)
+}
+func (l *loggerImpl) Debug(msg string, fields ...zap.Field) {
+	Debug(msg, fields...)
+}
+func (l *loggerImpl) Debugf(template string, args ...interface{}) {
+	Debugf(template, args...)
+}
+
+
 
 func InitLogger() error{
 	logLevel:=getLogLevel()
@@ -34,8 +53,9 @@ func InitLogger() error{
 	logFormat:=config.GetLoggerConfig().Format
 
 	encoderConfig := zap.NewProductionEncoderConfig()// 生产环境编码器配置
-	encoderConfig.TimeKey = "time"					// 时间键名
+	encoderConfig.TimeKey = "time"// 时间键名
 	encoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder// 时间编码器为ISO8601格式
+	encoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder// 使用彩色编码的日志级别
 
 	var encoder zapcore.Encoder
 	if logFormat == "json" {
@@ -91,7 +111,7 @@ func InitLogger() error{
 	Sugar = Logger.Sugar()
 	
 	// 注册日志实例到接口
-	utils.SetLogger(&loggerImpl{})
+	interfacer.SetLogger(&loggerImpl{})
 	
 	Logger.Info("日志初始化完成",
 		zap.String("level", logLevel.String()),

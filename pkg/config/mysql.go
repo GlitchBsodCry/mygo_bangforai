@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"mygo_bangforai/api/model"
+	"mygo_bangforai/api/errors"
 	"time"
 
 	"gorm.io/driver/mysql"
@@ -22,6 +23,7 @@ func InitMySQL() error {
 	)
 	Db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
+		err=errors.WrapError(err, errors.ConfigError, "数据库连接失败", "pkg/config.InitMySQL()")
 		return err
 	}
 	sqlDB, err := Db.DB()

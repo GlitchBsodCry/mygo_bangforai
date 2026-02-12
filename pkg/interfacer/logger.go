@@ -1,4 +1,4 @@
-package utils
+package interfacer
 
 import (
 	"go.uber.org/zap"
@@ -8,6 +8,12 @@ import (
 type LoggerInterface interface {
 	Error(msg string, fields ...zap.Field)
 	Errorf(template string, args ...interface{})
+	Warn(msg string, fields ...zap.Field)
+	Warnf(template string, args ...interface{})
+	Info(msg string, fields ...zap.Field)
+	Infof(template string, args ...interface{})
+	Debug(msg string, fields ...zap.Field)
+	Debugf(template string, args ...interface{})
 }
 
 // LoggerInstance 全局日志实例

@@ -8,17 +8,16 @@ import (
 )
 
 func main() {
-	err:=logger.InitLogger()
+	err:=config.InitConfig()
+	if err!=nil{
+		panic(err)
+	}
+
+	err=logger.InitLogger()
 	if err!=nil{
 		panic(err)
 	}
 	logger.Info("日志初始化完成")
-
-	err=config.InitConfig()
-	if err!=nil{
-		logger.Fatalf("初始化配置失败: %v", err)
-	}
-	logger.Info("配置初始化完成")
 
 	err=utils.InitJWT()
 	if err!=nil{

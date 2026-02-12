@@ -17,7 +17,7 @@ database:
 
 logger:
   level: "info"      # 日志级别: debug, info, warn, error
-  format: "json"     # 日志格式: json, console
+  format: "console"     # 日志格式: json, console
   output: "file"   # 输出方式: stdout, file
   file: "logs/app.log" # 日志文件路径
   error_file: "logs/error.log" # 错误日志文件路径

@@ -1,0 +1,6 @@
+2026-02-12T15:40:46.455+0800	[34mINFO[0m	main/main.go:16	日志初始化完成	{"level": "info", "format": "console", "file": "logs/app.log", "error_file": "logs/error.log"}
+2026-02-12T15:40:46.481+0800	[34mINFO[0m	main/main.go:20	日志初始化完成
+2026-02-12T15:40:46.481+0800	[34mINFO[0m	main/main.go:26	JWT初始化完成
+2026-02-12T15:40:46.510+0800	[34mINFO[0m	main/main.go:32	MySQL初始化完成
+2026-02-12T15:40:46.510+0800	[34mINFO[0m	main/main.go:38	路由初始化完成
+2026-02-12T15:40:46.510+0800	[31mERROR[0m	logger/logger.go:22	pkg/config/viper.GetServerPort()	{"服务器端口未配置": 1001}

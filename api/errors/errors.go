@@ -1,7 +1,7 @@
 package errors
 
 import (
-	"mygo_bangforai/pkg/utils"
+	"mygo_bangforai/pkg/interfacer"
 	"runtime"
 	"strings"
 	"time"
@@ -11,7 +11,7 @@ import (
 )
 
 func NewError(code int,message string,op string) *ServerError {
-	return &ServerError{
+	err:= &ServerError{
 		Code:       code,
 		Message:    message,
 		Op:         op,
@@ -20,6 +20,8 @@ func NewError(code int,message string,op string) *ServerError {
 		Fields:     make(map[string]any),
 		StackTrace: getStackTrace(),
 	}
+	handleError(*err)
+	return err
 }
 
 // WithContext 为错误添加上下文信息
@@ -56,7 +58,7 @@ func WrapError(err error, code int, message string, op string) *ServerError {
 }
 
 func handleError(err ServerError) *ServerError {
-	logger := utils.GetLogger()
+	logger := interfacer.GetLogger()
 	logger.Error(err.Op,zap.Int(err.Message,err.Code))
 
 	
