@@ -1,15 +1,19 @@
 package utils
 
 import (
-	"errors"
+	//stderr "errors"
 	"time"
 
 	"mygo_bangforai/pkg/config"
+	"mygo_bangforai/pkg/interfacer"
+	"mygo_bangforai/api/errors"
 
 	"github.com/golang-jwt/jwt/v5"
 )
 
 var jwtSecret []byte
+
+var logger = interfacer.GetLogger()
 
 // InitJWT 初始化JWT配置
 func InitJWT() error{
@@ -39,8 +43,11 @@ func GenerateToken(userID uint, username string) (string, error) {
 		},
 	}
 
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString(jwtSecret)
+	token, err := jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString(jwtSecret)
+	if err != nil {
+		return "", errors.WrapError(err, errors.UtilsError, "生成JWT失败", "internal/utils/jwt.go/GenerateToken")
+	}
+	return token, nil
 }
 
 func ParseToken(tokenString string) (*Claims, error) {
@@ -49,12 +56,12 @@ func ParseToken(tokenString string) (*Claims, error) {
 	})
 
 	if err != nil {
-		return nil, err
+		return nil, errors.WrapError(err, errors.UtilsError, "解析JWT失败", "internal/utils/jwt.go/ParseToken")
 	}
 
 	if claims, ok := token.Claims.(*Claims); ok && token.Valid {
 		return claims, nil
 	}
 
-	return nil, errors.New("invalid token")
+	return nil, errors.NewError(errors.UtilsError, "invalid token", "internal/utils/jwt.go/ParseToken")
 }

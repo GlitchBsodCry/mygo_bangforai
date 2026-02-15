@@ -28,6 +28,7 @@ func InitMySQL() error {
 	}
 	sqlDB, err := Db.DB()
 	if err != nil {
+		err=errors.WrapError(err, errors.ConfigError, "数据库连接失败", "pkg/config.InitMySQL()")
 		return err
 	}
 	// 使用配置文件中的连接池配置
@@ -38,7 +39,7 @@ func InitMySQL() error {
 	DB = Db
 
 	if err := autoMigrate(); err != nil {
-		return fmt.Errorf("failed to auto migrate: %w", err)
+		return errors.WrapError(err, errors.ConfigError, "数据库迁移失败", "pkg/config.InitMySQL()")
 	}
 
 	return nil
@@ -55,7 +56,7 @@ func autoMigrate() error {
 	)
 
 	if err != nil {
-		return fmt.Errorf("failed to auto migrate: %w", err)
+		return errors.WrapError(err, errors.ConfigError, "数据库迁移失败", "pkg/config.InitMySQL()")
 	}
 
 	return nil

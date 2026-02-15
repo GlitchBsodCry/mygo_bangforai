@@ -14,5 +14,6 @@ const (
     LoggerError = 1003
     RouterError = 1004
     UtilsError = 1005
+    ServiceError = 1006
 )
 

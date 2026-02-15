@@ -1,13 +1,17 @@
 package config
 
 import (
-	"fmt"
+	//"fmt"
 	"mygo_bangforai/api/errors"
 	"mygo_bangforai/api/model"
+	"mygo_bangforai/pkg/interfacer"
 
 	"github.com/fsnotify/fsnotify"
 	"github.com/spf13/viper"
+	"go.uber.org/zap"
 )
+
+var logger = interfacer.GetLogger()
 
 func InitConfig() error {
 	viper.SetConfigName("config") // 配置文件名（不含扩展名）
@@ -19,7 +23,7 @@ func InitConfig() error {
 
 	viper.WatchConfig()
 	viper.OnConfigChange(func(in fsnotify.Event) {
-		fmt.Println("配置文件发生变化", in.Name, in.Op)
+		logger.Info("配置文件发生变化", zap.String("filename", in.Name), zap.String("operation", in.Op.String()))
 	})
 	
 	if err := viper.ReadInConfig(); err != nil {// 读取配置文件

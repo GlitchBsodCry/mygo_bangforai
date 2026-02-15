@@ -4,14 +4,17 @@ import (
 	//"net/http"
 
 	"mygo_bangforai/api/errors"
-	
-	"github.com/gin-gonic/gin"
-)
+	"mygo_bangforai/pkg/interfacer"
 
-func Recovery() gin.HandlerFunc {
+	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
+)
+var logger = interfacer.GetLogger()
+func Recovery() (gin.HandlerFunc) {
 	return func(c *gin.Context) {
 		defer func() {
 			if err := recover(); err != nil {
+				logger.Error("recover from panic", zap.Any("error", err))
 				errors.Error(c, errors.InternalError, "internal error")
 				c.Abort()
 			}
